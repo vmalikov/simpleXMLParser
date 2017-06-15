@@ -8,11 +8,29 @@ import java.lang.reflect.ParameterizedType
  */
 class CleverField(var field: Field, var as_array: Boolean) {
 
-    open fun type(): Class<*> {
-        return field.type
+    fun setValue(obj: Any?, value: Any?) {
+        if (as_array) {
+            val addMethod = field.type.getDeclaredMethod("add", Object::class.java)
+            addMethod.isAccessible = true
+            addMethod.invoke(get(obj), value)
+
+        } else {
+            set(obj, value)
+        }
     }
 
-    open fun set(obj: Any?, value: Any?) {
+    fun isPrimitive(): Boolean = type().isPrimitive || type() == String::class.java
+
+    fun type(): Class<*> {
+        return if (as_array) getGenericType() else field.type
+    }
+
+    fun getGenericType(): Class<*> {
+        getStringClassName()?.let { stringClassName -> return Class.forName(stringClassName) }
+        throw IllegalArgumentException("Can not load class for ${field.genericType}")
+    }
+
+    private fun set(obj: Any?, value: Any?) {
         if (obj == null) throw IllegalArgumentException("object MUST be NOT null!")
         if (value == null) throw IllegalArgumentException("value MUST be NOT null!")
 
@@ -21,7 +39,7 @@ class CleverField(var field: Field, var as_array: Boolean) {
         field.isAccessible = false
     }
 
-    fun <T> get(instance: T): Any? {
+    private fun <T> get(instance: T): Any? {
         if (instance == null) throw IllegalArgumentException("object MUST be NOT null!")
 
         field.isAccessible = true
@@ -30,15 +48,12 @@ class CleverField(var field: Field, var as_array: Boolean) {
         return result
     }
 
-    fun getStringClassName(): String? {
-        (field.genericType as ParameterizedType).actualTypeArguments?.let { typeArguments ->
-            if (typeArguments.size > 0) return (typeArguments.get(0) as Class<*>).name
+    private fun getStringClassName(): String? {
+        val typeArguments = (field.genericType as ParameterizedType).actualTypeArguments
+        if (typeArguments != null && typeArguments.isNotEmpty()) {
+            return (typeArguments.get(0) as Class<*>).name
+        } else {
+            return null
         }
-        return null
-    }
-
-    fun getGenericType(): Class<*> {
-        getStringClassName()?.let { stringClassName -> return Class.forName(stringClassName) }
-        throw IllegalArgumentException("Can not load class for ${field.genericType}")
     }
 }

@@ -39,7 +39,5 @@ class FieldsHelper {
 
             return fieldsMap
         }
-
-        fun isPrimitive(type: Class<*>): Boolean = type.isPrimitive || type == String::class.java
     }
 }

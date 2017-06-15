@@ -7,30 +7,13 @@ import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParser.*
 import org.xmlpull.v1.XmlPullParserFactory
 import java.io.InputStream
-import java.lang.reflect.ParameterizedType
 
 /**
  * Created by Vladimir on 6/7/17.
  */
 open class SimpleParser {
-    val TAG = SimpleParser::class.java.name
 
-    var mappers: HashMap<Class<*>, XmlMapper<*>>? = null
-
-    var inited = false;
-
-    companion object {
-        open fun <T> parse(input: InputStream?, clazz: Class<T>): T? {
-            return SimpleParser().parse<T>(input, clazz)
-        }
-    }
-
-    fun init() {
-        if (inited) return
-        inited = true;
-
-        mappers = XmlMapper.Companion.getMappers()
-    }
+    var mappers: HashMap<Class<*>, XmlMapper<*>>? = XmlMapper.getMappers()
 
     /**
      * Entry point which wrap {@link java.io.InputStream} with {@link org.xmlpull.v1.XmlPullParser}.
@@ -40,7 +23,6 @@ open class SimpleParser {
      * @return instance of param clazz
      */
     fun <T> parse(input: InputStream?, clazz: Class<T>): T? {
-        init()
 
         val factory = XmlPullParserFactory.newInstance()
         val parser = factory.newPullParser()
@@ -62,11 +44,6 @@ open class SimpleParser {
                         return parseFor(parser, targetTagName, fields, clazz)
                     }
                 }
-                TEXT -> {
-                }
-                END_TAG -> {
-                }
-
             }
             eventType = parser.next()
         }
@@ -90,33 +67,17 @@ open class SimpleParser {
                 START_TAG -> {
                     fields[name]?.let { field ->
                         f = field
-                        if (field.as_array) {
 
-                            var type = field.getGenericType()
-                            val localFields = FieldsHelper.getFieldsMap(type)
-                            val localInstance = parseFor(parser, name, localFields, type)
-
-                            val addMethod = field.type().getDeclaredMethod("add", Object::class.java)
-                            addMethod.isAccessible = true
-                            addMethod.invoke(field.get(instance), localInstance)
-
+                        if(field.isPrimitive()) {
+                            m = mappers?.get(field.type())
                         } else {
-                            val type = field.type()
-                            if (FieldsHelper.isPrimitive(type)) {
-                                m = mappers?.get(type)
-                            } else {
-                                val localFields = FieldsHelper.getFieldsMap(type)
-                                val localInstance = parseFor(parser, name, localFields, type)
-                                field.set(instance, localInstance)
-                            }
+                            setValueToField(field.type(), parser, name, field, instance)
                         }
                     }
                 }
-                END_TAG -> {
-                }
                 TEXT -> {
                     m?.parse(parser)?.let { value ->
-                        f?.set(instance, value)
+                        f?.setValue(instance, value)
                         f = null;
                         m = null;
                     }
@@ -126,5 +87,14 @@ open class SimpleParser {
         }
 
         return instance
+    }
+
+    private fun <T> setValueToField(type: Class<*>, parser: XmlPullParser, name: String,
+                                    field: CleverField, instance: T?) {
+
+        val localFields = FieldsHelper.getFieldsMap(type)
+        val localInstance = parseFor(parser, name, localFields, type)
+
+        field.setValue(instance, localInstance)
     }
 }
