@@ -31,7 +31,7 @@ open class SimpleParser {
         return parseFor(parser, clazz)
     }
 
-    fun <T> parseFor(parser: XmlPullParser, clazz: Class<T>): T? {
+    private fun <T> parseFor(parser: XmlPullParser, clazz: Class<T>): T? {
         val targetTagName = FieldsHelper.targetTagName(clazz) ?: throw NullPointerException("Mark target class with annotation XmlName(name)")
         val fields = FieldsHelper.getFieldsMap(clazz)
 
@@ -51,19 +51,16 @@ open class SimpleParser {
         return null
     }
 
-    fun <T> parseFor(parser: XmlPullParser, oldTargetName: String, fields: Map<String, CleverField>, clazz: Class<T>): T {
+    private fun <T> parseFor(parser: XmlPullParser, oldTargetName: String, fields: Map<String, CleverField>, clazz: Class<T>): T {
         val instance = clazz.newInstance()
-
-        parser.next()
 
         var m: XmlMapper<*>? = null
         var f: CleverField? = null
 
-        var eventType = parser.eventType
-        while (!(eventType == END_TAG && TextUtils.equals(parser.name, oldTargetName))) {
+        while (!shouldStop(parser.next(), parser, oldTargetName)) {
 
             val name = parser.name
-            when (eventType) {
+            when (parser.eventType) {
                 START_TAG -> {
                     fields[name]?.let { field ->
                         f = field
@@ -83,7 +80,6 @@ open class SimpleParser {
                     }
                 }
             }
-            eventType = parser.next()
         }
 
         return instance
@@ -96,5 +92,9 @@ open class SimpleParser {
         val localInstance = parseFor(parser, name, localFields, type)
 
         field.setValue(instance, localInstance)
+    }
+
+    private fun shouldStop(eventType: Int, parser: XmlPullParser, oldTargetName: String): Boolean {
+        return eventType == END_TAG && TextUtils.equals(parser.name, oldTargetName)
     }
 }
