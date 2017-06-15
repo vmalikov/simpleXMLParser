@@ -94,7 +94,5 @@ open class SimpleParser {
         field.setValue(instance, localInstance)
     }
 
-    private fun shouldStop(eventType: Int, parser: XmlPullParser, oldTargetName: String): Boolean {
-        return eventType == END_TAG && TextUtils.equals(parser.name, oldTargetName)
-    }
+    private fun shouldStop(eventType: Int, parser: XmlPullParser, oldTargetName: String): Boolean = eventType == END_TAG && TextUtils.equals(parser.name, oldTargetName)
 }
