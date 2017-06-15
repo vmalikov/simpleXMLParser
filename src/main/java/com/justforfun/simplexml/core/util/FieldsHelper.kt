@@ -31,6 +31,12 @@ class FieldsHelper {
                     val annotation = field.getAnnotation(XmlName::class.java)
                     fieldsMap.put(annotation.name, CleverField(field, false))
 
+                    if(annotation.names.isNotEmpty()) {
+                        for (it in annotation.names) {
+                            fieldsMap.put(it, CleverField(field, false))
+                        }
+                    }
+
                 } else if (field.isAnnotationPresent(XmlAsArray::class.java)) {
                     val annotation = field.getAnnotation(XmlAsArray::class.java)
                     fieldsMap.put(annotation.name, CleverField(field, true))
