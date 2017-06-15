@@ -8,8 +8,6 @@ import org.xmlpull.v1.XmlPullParser
  */
 class StringMapper: XmlMapper<String>() {
     override fun parse(parser: XmlPullParser): String {
-        val result = parser.text;
-        Log.i("XmlMapper", javaClass.name + " parsed: $result");
-        return result
+        return parser.text;
     }
 }

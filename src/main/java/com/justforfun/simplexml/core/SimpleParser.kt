@@ -48,11 +48,7 @@ open class SimpleParser {
         val parser = factory.newPullParser()
         parser.setInput(input, null)
 
-        Log.i(TAG, "start parsing")
-        val instance = parseFor(parser, clazz)
-        Log.i(TAG, "finish parsing " + instance.toString())
-
-        return instance
+        return parseFor(parser, clazz)
     }
 
     fun <T> parseFor(parser: XmlPullParser, clazz: Class<T>): T? {
@@ -63,13 +59,13 @@ open class SimpleParser {
         while (eventType != END_DOCUMENT) {
             when (eventType) {
                 START_TAG -> {
-                    Log.i(TAG, "${parser.depth} start tag " + parser.name)
+
                     if (TextUtils.equals(parser.name, targetTagName)) {
                         return parseFor(parser, targetTagName, fields, clazz)
                     }
                 }
-                TEXT -> Log.i(TAG, "${parser.depth} text " + parser.text)
-                END_TAG -> Log.i(TAG, "${parser.depth} end tag " + parser.name)
+                TEXT -> {}
+                END_TAG -> {}
 
             }
             eventType = parser.next()
@@ -92,7 +88,6 @@ open class SimpleParser {
             val name = parser.name
             when (eventType) {
                 START_TAG -> {
-                    Log.i(TAG, "${parser.depth} start tag " + name)
                     f = fields.get(name)
                     if (f != null) {
                         if (f.as_array) {
@@ -119,16 +114,13 @@ open class SimpleParser {
                             }
                         }
                     } else {
-                        Log.i(TAG, "${parser.depth} wan't able to find field for " + name)
+                        Log.d(TAG, "${parser.depth} wasn't able to find field for " + name)
                     }
                 }
-                END_TAG -> Log.i(TAG, "${parser.depth} end tag " + name)
+                END_TAG -> {}
                 TEXT -> {
-                    Log.i(TAG, "${parser.depth} text " + parser.text)
                     val value = m?.parse(parser)
-                    if (value == null) {
-                        Log.i(TAG, "${parser.depth} text is empty!")
-                    } else {
+                    if (value != null) {
                         f?.set(instance, value)
                     }
                     f = null;
@@ -171,17 +163,3 @@ open class SimpleParser {
         return fieldsMap;
     }
 }
-
-/*
-        var eventType = parser.eventType
-        while (eventType != END_DOCUMENT) {
-            when (eventType) {
-                START_DOCUMENT -> Log.i(TAG, "start document")
-                START_TAG -> Log.i(TAG, "start tag " + parser.name)
-                END_TAG -> Log.i(TAG, "end tag " + parser.name)
-                TEXT -> Log.i(TAG, "text "+ parser.text)
-                END_DOCUMENT -> Log.i(TAG, "end document")
-            }
-            eventType = parser.next()
-        }
-        */

@@ -1,6 +1,5 @@
 package com.justforfun.simplexml.core
 
-import android.util.Log
 import java.lang.reflect.Field
 
 /**

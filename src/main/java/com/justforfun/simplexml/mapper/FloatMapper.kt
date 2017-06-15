@@ -8,8 +8,6 @@ import org.xmlpull.v1.XmlPullParser
  */
 open class FloatMapper: XmlMapper<Float>() {
     override fun parse(parser: XmlPullParser): Float? {
-        val result = parser.text.toFloat();
-        Log.i("XmlMapper", javaClass.name + " parsed: $result");
-        return result
+        return parser.text.toFloat();
     }
 }
