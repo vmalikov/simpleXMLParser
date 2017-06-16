@@ -1,0 +1,8 @@
+<resources>
+    <app_name>SimpleXmlParser</app_name>
+    <app_version>1</app_version>
+    <build_info>
+        <app_code_version>2</app_code_version>
+        <build_version>3</build_version>
+    </build_info>
+</resources>
