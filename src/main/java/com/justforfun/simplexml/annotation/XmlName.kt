@@ -7,4 +7,4 @@ package com.justforfun.simplexml.annotation
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FIELD)
 @Retention(AnnotationRetention.RUNTIME)
 @MustBeDocumented
-annotation class XmlName(val name: String, vararg val names: String = arrayOf<String>())
+annotation class XmlName(val name: String = "", vararg val names: String = arrayOf<String>())

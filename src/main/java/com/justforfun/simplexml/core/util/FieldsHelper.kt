@@ -1,8 +1,10 @@
 package com.justforfun.simplexml.core.util
 
+import android.text.TextUtils
 import com.justforfun.simplexml.annotation.XmlAsArray
 import com.justforfun.simplexml.annotation.XmlName
 import com.justforfun.simplexml.core.CleverField
+import java.lang.reflect.Field
 
 /**
  * Created by Vladimir on 6/15/17.
@@ -29,12 +31,11 @@ class FieldsHelper {
             for (field in clazz.declaredFields) {
                 if (field.isAnnotationPresent(XmlName::class.java)) {
                     val annotation = field.getAnnotation(XmlName::class.java)
-                    fieldsMap.put(annotation.name, CleverField(field, false))
 
-                    if(annotation.names.isNotEmpty()) {
-                        for (it in annotation.names) {
-                            fieldsMap.put(it, CleverField(field, false))
-                        }
+                    addToMapIfNeed(annotation.name, field, fieldsMap)
+
+                    for (it in annotation.names) {
+                        addToMapIfNeed(it, field, fieldsMap)
                     }
 
                 } else if (field.isAnnotationPresent(XmlAsArray::class.java)) {
@@ -44,6 +45,12 @@ class FieldsHelper {
             }
 
             return fieldsMap
+        }
+
+        fun addToMapIfNeed(it: String, field: Field, fieldsMap: HashMap<String, CleverField>) {
+            if(!TextUtils.isEmpty(it)) {
+                fieldsMap.put(it, CleverField(field, false))
+            }
         }
     }
 }
