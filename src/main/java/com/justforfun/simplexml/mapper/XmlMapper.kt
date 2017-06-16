@@ -15,10 +15,14 @@ open class XmlMapper<T> {
         open fun getMappers(): HashMap<Class<*>, XmlMapper<*>> {
             val mappers = HashMap<Class<*>, XmlMapper<*>>()
 
-            mappers.put(String::class.java, StringMapper())
-            mappers.put(Float::class.java, FloatMapper())
             mappers.put(Object::class.java, ObjectMapper())
-
+            mappers.put(String::class.java, StringMapper())
+            mappers.put(Int::class.java, IntMapper())
+            mappers.put(Byte::class.java, ByteMapper())
+            mappers.put(Short::class.java, ShortMapper())
+            mappers.put(Float::class.java, FloatMapper())
+            mappers.put(Double::class.java, DoubleMapper())
+            mappers.put(Boolean::class.java, BooleanMapper())
             return mappers
         }
     }
