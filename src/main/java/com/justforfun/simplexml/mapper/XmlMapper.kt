@@ -17,9 +17,10 @@ open class XmlMapper<T> {
 
             mappers.put(Object::class.java, ObjectMapper())
             mappers.put(String::class.java, StringMapper())
-            mappers.put(Int::class.java, IntMapper())
             mappers.put(Byte::class.java, ByteMapper())
             mappers.put(Short::class.java, ShortMapper())
+            mappers.put(Int::class.java, IntMapper())
+            mappers.put(Long::class.java, LongMapper())
             mappers.put(Float::class.java, FloatMapper())
             mappers.put(Double::class.java, DoubleMapper())
             mappers.put(Boolean::class.java, BooleanMapper())
