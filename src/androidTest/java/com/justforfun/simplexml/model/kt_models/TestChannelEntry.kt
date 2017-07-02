@@ -17,5 +17,5 @@ class TestChannelEntry {
     @com.justforfun.simplexml.annotation.XmlName(name = "image")
     var image: TestChannelImage? = null
     @com.justforfun.simplexml.annotation.XmlAsArray(name = "item")
-    var items: java.util.ArrayList<TestFeedEntry>? = java.util.ArrayList<TestFeedEntry>()
+    var items: java.util.ArrayList<TestFeedEntryConstructorParams>? = java.util.ArrayList<TestFeedEntryConstructorParams>()
 }
