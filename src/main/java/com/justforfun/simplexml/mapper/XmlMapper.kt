@@ -5,7 +5,7 @@ import org.xmlpull.v1.XmlPullParser
 /**
  * Created by Vladimir on 6/8/17.
  */
-open class XmlMapper<T> {
+open class XmlMapper<out T> {
     open fun parse(parser: XmlPullParser): T? {
         return null
     }
@@ -18,26 +18,34 @@ open class XmlMapper<T> {
             mappers.put(Object::class.java, ObjectMapper())
             mappers.put(String::class.java, StringMapper())
 
-            mappers.put(Byte::class.java, ByteMapper())
-            mappers.put(java.lang.Byte::class.java, ByteMapper())
+            val byteMapper = ByteMapper()
+            mappers.put(Byte::class.java, byteMapper)
+            mappers.put(java.lang.Byte::class.java, byteMapper)
 
-            mappers.put(Short::class.java, ShortMapper())
-            mappers.put(java.lang.Short::class.java, ShortMapper())
+            val shortMapper = ShortMapper()
+            mappers.put(Short::class.java, shortMapper)
+            mappers.put(java.lang.Short::class.java, shortMapper)
 
-            mappers.put(Int::class.java, IntMapper())
-            mappers.put(Integer::class.java, IntMapper())
+            val intMapper = IntMapper()
+            mappers.put(Int::class.java, intMapper)
+            mappers.put(Integer::class.java, intMapper)
 
-            mappers.put(Long::class.java, LongMapper())
-            mappers.put(java.lang.Long::class.java, LongMapper())
+            val longMapper = LongMapper()
+            mappers.put(Long::class.java, longMapper)
+            mappers.put(java.lang.Long::class.java, longMapper)
 
-            mappers.put(Float::class.java, FloatMapper())
-            mappers.put(java.lang.Float::class.java, FloatMapper())
+            val floatMapper = FloatMapper()
+            mappers.put(Float::class.java, floatMapper)
+            mappers.put(java.lang.Float::class.java, floatMapper)
 
-            mappers.put(Double::class.java, DoubleMapper())
-            mappers.put(java.lang.Double::class.java, DoubleMapper())
+            val doubleMapper = DoubleMapper()
+            mappers.put(Double::class.java, doubleMapper)
+            mappers.put(java.lang.Double::class.java, doubleMapper)
 
-            mappers.put(Boolean::class.java, BooleanMapper())
-            mappers.put(java.lang.Boolean::class.java, BooleanMapper())
+            val booleanMapper = BooleanMapper()
+            mappers.put(Boolean::class.java, booleanMapper)
+            mappers.put(java.lang.Boolean::class.java, booleanMapper)
+
             return mappers
         }
     }

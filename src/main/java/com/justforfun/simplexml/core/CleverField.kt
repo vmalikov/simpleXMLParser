@@ -7,6 +7,7 @@ import java.lang.reflect.ParameterizedType
  * Created by Vladimir on 6/7/17.
  */
 class CleverField(var field: Field, var as_array: Boolean) {
+    constructor(field: Field) : this(field, false)
 
     fun setValue(obj: Any?, value: Any?) {
         if (as_array) {
