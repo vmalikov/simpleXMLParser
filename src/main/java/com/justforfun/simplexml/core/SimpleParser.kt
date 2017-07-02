@@ -1,38 +1,19 @@
 package com.justforfun.simplexml.core
 
 import android.text.TextUtils
-import android.util.Log
-import com.justforfun.simplexml.annotation.XmlAsArray
-import com.justforfun.simplexml.annotation.XmlName
+import com.justforfun.simplexml.core.util.FieldsHelper
 import com.justforfun.simplexml.mapper.XmlMapper
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParser.*
 import org.xmlpull.v1.XmlPullParserFactory
 import java.io.InputStream
-import java.lang.reflect.ParameterizedType
 
 /**
  * Created by Vladimir on 6/7/17.
  */
 open class SimpleParser {
-    val TAG = SimpleParser::class.java.name
 
-    var mappers: HashMap<Class<*>, XmlMapper<*>>? = null
-
-    var inited = false;
-
-    companion object {
-        open fun <T> parse(input: InputStream?, clazz: Class<T>): T? {
-            return SimpleParser().parse<T>(input, clazz)
-        }
-    }
-
-    fun init() {
-        if (inited) return
-        inited = true;
-
-        mappers = XmlMapper.Companion.getMappers()
-    }
+    var mappers: HashMap<Class<*>, XmlMapper<*>>? = XmlMapper.getMappers()
 
     /**
      * Entry point which wrap {@link java.io.InputStream} with {@link org.xmlpull.v1.XmlPullParser}.
@@ -42,7 +23,6 @@ open class SimpleParser {
      * @return instance of param clazz
      */
     fun <T> parse(input: InputStream?, clazz: Class<T>): T? {
-        init()
 
         val factory = XmlPullParserFactory.newInstance()
         val parser = factory.newPullParser()
@@ -51,9 +31,9 @@ open class SimpleParser {
         return parseFor(parser, clazz)
     }
 
-    fun <T> parseFor(parser: XmlPullParser, clazz: Class<T>): T? {
-        val targetTagName = targetTagName(clazz) ?: throw NullPointerException("Mark target class with annotation XmlName(name)")
-        val fields = getFieldsMap(clazz)
+    private fun <T> parseFor(parser: XmlPullParser, clazz: Class<T>): T? {
+        val targetTagName = FieldsHelper.targetTagName(clazz) ?: throw NullPointerException("Mark target class with annotation XmlName(name)")
+        val fields = FieldsHelper.getFieldsMap(clazz)
 
         var eventType = parser.eventType
         while (eventType != END_DOCUMENT) {
@@ -64,9 +44,6 @@ open class SimpleParser {
                         return parseFor(parser, targetTagName, fields, clazz)
                     }
                 }
-                TEXT -> {}
-                END_TAG -> {}
-
             }
             eventType = parser.next()
         }
@@ -74,92 +51,48 @@ open class SimpleParser {
         return null
     }
 
-    fun <T> parseFor(parser: XmlPullParser, oldTargetName: String, fields: Map<String, CleverField>, clazz: Class<T>): T {
+    private fun <T> parseFor(parser: XmlPullParser, oldTargetName: String, fields: Map<String, CleverField>, clazz: Class<T>): T {
         val instance = clazz.newInstance()
-
-        parser.next()
 
         var m: XmlMapper<*>? = null
         var f: CleverField? = null
 
-        var eventType = parser.eventType
-        while (!(eventType == END_TAG && TextUtils.equals(parser.name, oldTargetName))) {
+        while (!shouldStop(parser.next(), parser, oldTargetName)) {
 
             val name = parser.name
-            when (eventType) {
+            when (parser.eventType) {
                 START_TAG -> {
-                    f = fields.get(name)
-                    if (f != null) {
-                        if (f.as_array) {
-                            var typeArguments = (f.field.genericType as ParameterizedType).actualTypeArguments
-                            if(typeArguments != null && typeArguments.size > 0) {
-                                var stringClassName = (typeArguments.get(0) as Class<*>).name
-                                var type = Class.forName(stringClassName)
+                    fields[name]?.let { field ->
+                        f = field
 
-                                val localFields = getFieldsMap(type)
-                                val localInstance = parseFor(parser, name, localFields, type)
-
-                                val addMethod = f.type().getDeclaredMethod("add", Object::class.java)
-                                addMethod.isAccessible = true
-                                addMethod.invoke(f.get(instance), localInstance)
-                            }
+                        if(field.isPrimitive()) {
+                            m = mappers?.get(field.type())
                         } else {
-                            val type = f.type()
-                            if (type.isPrimitive || type == String::class.java) {
-                                m = mappers?.get(type)
-                            } else {
-                                val localFields = getFieldsMap(type)
-                                val localInstance = parseFor(parser, name, localFields, type)
-                                f.set(instance, localInstance)
-                            }
+                            setValueToField(field.type(), parser, name, field, instance)
                         }
-                    } else {
-                        Log.d(TAG, "${parser.depth} wasn't able to find field for " + name)
                     }
                 }
-                END_TAG -> {}
                 TEXT -> {
-                    val value = m?.parse(parser)
-                    if (value != null) {
-                        f?.set(instance, value)
+                    m?.parse(parser)?.let { value ->
+                        f?.setValue(instance, value)
+                        f = null;
+                        m = null;
                     }
-                    f = null;
-                    m = null;
                 }
             }
-            eventType = parser.next()
         }
 
         return instance
     }
 
-    fun <T> targetTagName(clazz: Class<T>): String? {
-        if (clazz.isAnnotationPresent(XmlName::class.java)) {
-            val annotation = clazz.getAnnotation(XmlName::class.java)
-            return annotation.name
-        }
-        return null
+    private fun <T> setValueToField(type: Class<*>, parser: XmlPullParser, name: String,
+                                    field: CleverField, instance: T?) {
+
+        val localFields = FieldsHelper.getFieldsMap(type)
+        val localInstance = parseFor(parser, name, localFields, type)
+
+        field.setValue(instance, localInstance)
     }
 
-    /**
-     * @param clazz represents type with fields which will be stored to HashMap
-     * @return Map with name in annotation as key and field itself as value
-     */
-    fun <T> getFieldsMap(clazz: Class<T>): Map<String, CleverField> {
-        val fieldsMap = HashMap<String, CleverField>()
-
-        for (field in clazz.declaredFields) {
-            if (field.isAnnotationPresent(XmlName::class.java)) {
-                val annotation = field.getAnnotation(XmlName::class.java)
-                fieldsMap.put(annotation.name, CleverField(field, false))
-
-            } else if (field.isAnnotationPresent(XmlAsArray::class.java)) {
-                val annotation = field.getAnnotation(XmlAsArray::class.java)
-                // FIXME: add ability to mark if item should be stared in array
-                fieldsMap.put(annotation.name, CleverField(field, true))
-            }
-        }
-
-        return fieldsMap;
-    }
+    private fun shouldStop(eventType: Int, parser: XmlPullParser, oldTargetName: String): Boolean = eventType == END_TAG && TextUtils.equals(parser.name, oldTargetName)
 }
