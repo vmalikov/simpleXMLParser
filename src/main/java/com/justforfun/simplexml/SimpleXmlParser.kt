@@ -11,5 +11,9 @@ class SimpleXmlParser {
         fun <T> parse(input: InputStream?, clazz: Class<T>): T? {
             return SimpleParser().parse<T>(input, clazz)
         }
+
+        fun <T> parse(input: String?, clazz: Class<T>): T? {
+            return SimpleParser().parse<T>(input, clazz)
+        }
     }
 }

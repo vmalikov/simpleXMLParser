@@ -7,6 +7,7 @@ import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParser.*
 import org.xmlpull.v1.XmlPullParserFactory
 import java.io.InputStream
+import java.io.StringReader
 
 /**
  * Created by Vladimir on 6/7/17.
@@ -27,6 +28,22 @@ open class SimpleParser {
         val factory = XmlPullParserFactory.newInstance()
         val parser = factory.newPullParser()
         parser.setInput(input, null)
+
+        return parseFor(parser, clazz)
+    }
+
+    /**
+     * Entry point which wrap {@link java.lang.String} with {@link org.xmlpull.v1.XmlPullParser}.
+     *
+     * @param input - String with XML data
+     * @param clazz - XML data should be parsed to an instance of this {@link java.lang.Class} object
+     * @return instance of param clazz
+     */
+    fun <T> parse(input: String?, clazz: Class<T>): T? {
+
+        val factory = XmlPullParserFactory.newInstance()
+        val parser = factory.newPullParser()
+        parser.setInput(StringReader(input))
 
         return parseFor(parser, clazz)
     }
