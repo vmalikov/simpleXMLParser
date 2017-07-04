@@ -71,8 +71,9 @@ public class TestEntry {
 
 ### Download 
 
-Note that Gradle is the only supported build configuration for simpleXMLParser. To add the library to your app's build.gradle file.
-```
+Add to build.gradle:
+
+```groovy
 buildscript {
     repositories {
         jcenter()
@@ -80,8 +81,18 @@ buildscript {
 }
 
 dependencies {
-    compile 'com.justforfun:simplexmlparser:1.0.0'
+    compile 'com.justforfun:simple-xml-parser:1.0.0'
 }
+```
+Or grab via Maven:
+
+```xml
+<dependency>
+  <groupId>com.justforfun</groupId>
+  <artifactId>simple-xml-parser</artifactId>
+  <version>1.0.0</version>
+  <type>pom</type>
+</dependency>
 ```
 
 Please use the [SimpleXMLParser issue tracker](https://github.com/vmalikov/simplexmlparser/issues) to discuss anything related to library.
