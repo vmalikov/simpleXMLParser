@@ -69,32 +69,6 @@ public class TestEntry {
 }
 ```
 
-### Download 
-
-Add to build.gradle:
-
-```groovy
-buildscript {
-    repositories {
-        jcenter()
-    }
-}
-
-dependencies {
-    compile 'com.justforfun:simple-xml-parser:1.0.0'
-}
-```
-Or grab via Maven:
-
-```xml
-<dependency>
-  <groupId>com.justforfun</groupId>
-  <artifactId>simple-xml-parser</artifactId>
-  <version>1.0.0</version>
-  <type>pom</type>
-</dependency>
-```
-
 Please use the [SimpleXMLParser issue tracker](https://github.com/vmalikov/simplexmlparser/issues) to discuss anything related to library.
 
 ### License
